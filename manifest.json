@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Dramatoons Highlighter",
+  "version": "2.2",
+  "description": "Surligne vos webtoons suivis sur le site dramatoons.ovh.",
+  "permissions": [
+    "tabs",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://api.dramatoons.ovh/*",
+    "https://api-staging.dramatoons.ovh/*",
+    "http://127.0.0.1:8081/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "action": {
+    "default_title": "Dramatoons Highlighter",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/dramatoons_16.png",
+      "32": "icons/dramatoons_32.png"
+    }
+  },
+  "icons": {
+    "16": "icons/dramatoons_16.png",
+    "32": "icons/dramatoons_32.png",
+    "48": "icons/dramatoons_48.png",
+    "128": "icons/dramatoons_128.png"
+  }
+}

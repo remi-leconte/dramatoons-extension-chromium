@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Webtoon Highlighter</title>
+
+<style>
+    body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        min-width: 260px;
+        padding: 14px;
+        background: #eef1f5;
+        color:#333;
+    }
+
+    /* HEADER */
+    .header-link {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .header-card {
+        display: flex;
+        align-items: center;
+        background: white;
+        padding: 14px;
+        border-radius: 12px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        margin-bottom: 14px;
+        transition: transform 0.15s;
+    }
+
+    .header-card:hover {
+        transform: scale(1.01);
+    }
+
+    .header-card img {
+        width: 45px;
+        height: 45px;
+        border-radius: 10px;
+        margin-right: 10px;
+    }
+
+    .header-title {
+        font-size: 18px;
+        font-weight: bold;
+        color: #222;
+    }
+
+    /* --- GENERAL CARD --- */
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 14px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        margin-bottom: 14px;
+    }
+
+    .hidden { display: none; }
+
+    /* CONTROLS */
+    .controls-row {
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        margin-bottom:12px;
+    }
+
+    .label {
+        font-size:14px;
+        font-weight:600;
+    }
+
+    /* TOGGLE */
+    #enabledToggle {
+        width:42px; height:22px;
+        appearance:none;
+        background:#ccc;
+        border-radius:22px;
+        position:relative;
+        cursor:pointer;
+        transition:0.25s;
+    }
+    #enabledToggle:checked { background:#4CAF50; }
+    #enabledToggle::before {
+        content:'';
+        position:absolute;
+        width:18px; height:18px;
+        border-radius:50%;
+        top:2px; left:2px;
+        background:white;
+        transition:0.25s;
+    }
+    #enabledToggle:checked::before {
+        transform:translateX(20px);
+    }
+
+    /* REFRESH BTN */
+	#refreshBtn {
+		background:#4CAF50;
+		border:none;
+		border-radius:50%;
+		width:36px;
+		height:36px;
+		cursor:pointer;
+		display:flex;
+		align-items:center;
+		justify-content:center;
+		transition: transform 0.2s, background 0.2s;
+	}
+
+	#refreshBtn:hover {
+		background:#3d923f;
+		transform: rotate(20deg);
+	}
+
+	#refreshBtn svg {
+		width:18px;
+		height:18px;
+	}
+
+    /* --- STATS --- */
+    .stats {
+        font-size: 13px;
+        color:#555;
+        line-height: 1.4em;
+        margin-top: 6px;
+        text-align:left;
+        white-space: pre-line;
+    }
+	.stats-row {
+		display: flex;
+		justify-content: space-between; /* label à gauche, valeur à droite */
+		padding: 2px 0;
+		margin-bottom: 6px;
+	}
+
+	.stats-label {
+		font-weight: 600;
+		color: #444;
+	}
+
+	.stats-value {
+		text-align: right;
+		font-weight: 500;
+		color: #222;
+		margin-right:10px;
+	}
+
+    /* --- FORMULAIRE DE CONNEXION --- */
+    .form-group {
+        margin-bottom: 10px;
+    }
+    .form-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+    .form-group input {
+        width: 100%;
+        padding: 8px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+    .btn-login {
+        width: 100%;
+        padding: 8px;
+        background: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .btn-logout {
+        width: 100%;
+        padding: 6px;
+        background: #e53935;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+    .error-msg {
+        color: #d32f2f;
+        font-size: 12px;
+        margin-top: 6px;
+    }
+</style>
+
+</head>
+<body>
+
+<!-- HEADER -->
+<a href="https://dramatoons.ovh" target="_blank" class="header-link">
+    <div class="header-card">
+        <img src="icons/dramatoons_48.png" alt="Logo">
+        <div class="header-title">Dramatoons</div>
+    </div>
+</a>
+
+<!-- LOGIN MESSAGE / FORM -->
+<div id="loginMessage" class="hidden card">
+  <form id="loginForm">
+      <div class="form-group">
+          <label for="login">Login</label>
+          <input type="text" id="login" required>
+      </div>
+      <div class="form-group">
+          <label for="password">Mot de passe</label>
+          <input type="password" id="password" required>
+      </div>
+      <button type="submit" class="btn-login">Se connecter</button>
+      <div id="loginError" class="error-msg hidden"></div>
+  </form>
+</div>
+
+<!-- CONNECTED CONTROLS -->
+<div id="connectedControls" class="hidden card">
+
+  <div class="stats" id="statsDisplay">
+	<div class="stats-row">
+		<div class="stats-label">Utilisateur :</div>
+		<div class="stats-value"></div>
+	</div>
+	<div class="stats-row">
+		<div class="stats-label">Webtoons suivis :</div>
+		<div class="stats-value"></div>
+	</div>
+  </div>
+  
+  
+  <div class="controls-row">
+      <div class="label">Extension activée :</div>
+      <input type="checkbox" id="enabledToggle">
+  </div>
+
+  <div class="controls-row">
+      <div class="label">Rafraîchir :</div>
+      <button id="refreshBtn" title="Rafraîchir">
+		  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="white" viewBox="0 0 16 16">
+			<path d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 1 0-.908-.418A6 6 0 1 0 8 2v1z"/>
+			<path d="M8 0v3h3"/>
+		  </svg>
+		</button>
+  </div>
+
+  <button id="logoutBtn" class="btn-logout">Déconnexion</button>
+
+</div>
+
+<script src="config.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>
