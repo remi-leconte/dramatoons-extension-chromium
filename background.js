@@ -2,6 +2,13 @@ importScripts("config.js");
 
 const tabStates = {};
 
+function stagingHeaders(headers) {
+    if (typeof STAGING_AUTH !== "undefined" && STAGING_AUTH) {
+        headers["X-Staging-Auth"] = `Basic ${btoa(STAGING_AUTH)}`;
+    }
+    return headers;
+}
+
 async function refreshJwtToken() {
     const { refreshToken } = await chrome.storage.local.get("refreshToken");
     if (!refreshToken) return null;
@@ -9,7 +16,7 @@ async function refreshJwtToken() {
     try {
         const res = await fetch(`${API_BASE_URL}/token/refresh`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: stagingHeaders({ "Content-Type": "application/json" }),
             body: JSON.stringify({ refresh_token: refreshToken })
         });
 
@@ -42,9 +49,7 @@ async function fetchWithAuth(url, options = {}) {
         "Accept": "application/json"
     };
 
-    if (typeof STAGING_AUTH !== "undefined" && STAGING_AUTH) {
-        headers["X-Staging-Auth"] = `Basic ${btoa(STAGING_AUTH)}`;
-    }
+    stagingHeaders(headers);
 
     options.headers = headers;
 
@@ -73,9 +78,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                     "Content-Type": "application/json", 
                     "Accept": "application/json" 
                 };
-                if (typeof STAGING_AUTH !== "undefined" && STAGING_AUTH) {
-                    headers["X-Staging-Auth"] = `Basic ${btoa(STAGING_AUTH)}`;
-                }
+                stagingHeaders(headers);
 
                 const res = await fetch(`${API_BASE_URL}/login`, {
                     method: "POST",
